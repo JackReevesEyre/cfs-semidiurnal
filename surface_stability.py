@@ -48,7 +48,7 @@ def main():
     )] = np.nan
     
     # Calculate surface humidity.
-    ds_atmo['SPFHS'] = qsat(ds_atmo['TMP_2m'], ds_atmo['PRES'])
+    ds_atmo['SPFHS'] = 0.98 * qsat(ds_atmo['TMP_2m'], ds_atmo['PRES'])
     
     # Calculate wind speed.
     ds_atmo['WSPD_10m'] = np.sqrt(ds_atmo['VGRD_10m']**2 +
@@ -160,9 +160,18 @@ def plot_many_months(da, ax, label):
                     da.sel(month=mon, lat=lat, lon=lon),
                     'lon'
                 )
+                if 'da_sum' in locals():
+                    da_sum.data = da_sum.data + da_plot.fillna(0.0).data
+                    N = N + 1
+                else:
+                    da_sum = da_plot.fillna(0.0)
+                    N = 1
                 ax.plot(range(24),
                         da_plot.data,
                         c='b', alpha=0.3, linewidth=0.3)
+    ax.plot(range(24),
+            da_sum.data / N,
+            c='k', alpha=0.5, linewidth=1.5)
     ax.set_ylabel(label)
     return
 
