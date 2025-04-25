@@ -66,12 +66,18 @@ def main():
     plot_example_composites(ds_anom, example_month, example_latlon, axts[0])
     
     # Add legend to first figure.
-    l = fig.legend(loc='upper center',
-                   bbox_to_anchor=(0.5, 0.95),
-                   ncol=3)
+    l = axts[0].legend(loc='upper center',
+                       bbox_to_anchor=(0.5, 1.4),
+                       ncol=2,
+                       columnspacing=-5)
     
     # Add example residuals.
     plot_example_resids(ds_resid, example_month, example_latlon, axts[1])
+    
+    # Add legend to second figure.
+    l2 = axts[1].legend(loc='upper center',
+                        bbox_to_anchor=(1.2, 1.4),
+                        ncol=1)
     
     # Add pooled residuals.
     plot_all_resids(ds_resid, axts[2])
@@ -98,7 +104,7 @@ def main():
     print(f'Max: {tmin_error_diff.max().data},  min: {tmin_error_diff.min().data},  mean; {tmin_error_diff.mean().data}')
     
     # Save figure.
-    plotfileformat='png'
+    plotfileformat='pdf'
     plt.savefig(PLOT_DIR + 'residuals_MAE_map' + '.' + plotfileformat,
                 format=plotfileformat,
                 dpi=400,
@@ -116,11 +122,11 @@ def plot_example_composites(ds, example_month, example_latlon, ax):
             ds_example.TMP_2m.data,
             c='k', label=r'$\Delta MAT$')
     ax.plot(range(24),
-            ds_example.TMP_SFC.data,
-            c='b', label=r'$\Delta SST$')
-    ax.plot(range(24),
             ds_example.temp_model.data,
             c='r', label=r'$\Delta SST + \Delta MAT_{adiabatic}$')
+    ax.plot(range(24),
+            ds_example.TMP_SFC.data,
+            c='b', label=r'$\Delta SST$')
     
     # Add vertical lines for times of min and max.
     ax.axvline(ds_example.TMP_2m.argmin(dim='hour'),
@@ -152,16 +158,16 @@ def plot_example_resids(ds, example_month, example_latlon, ax):
     ds_example = order_hour_by_local_time(ds_example, 'lon')
     ax.plot(range(24),
             ds_example.TMP_SFC.data,
-            c='b', label=r'$\Delta SST$')
+            c='#377eb8', label=r'$\Delta SST - \Delta MAT$')
     ax.plot(range(24),
             ds_example.temp_model.data,
-            c='r', label=r'$\Delta SST\ + \ \Delta MAT_{adiabatic}$')
+            c='#ff7f00', label=r'$\Delta SST + \Delta MAT_{adiabatic} - \Delta MAT$')
     ax.scatter(23.5,
                np.abs(ds_example.TMP_SFC).mean().data,
-               c='b')
+               c='#377eb8')
     ax.scatter(23.5,
                np.abs(ds_example.temp_model).mean().data,
-               c='r')
+               c='#ff7f00')
     return
 
 
@@ -175,10 +181,10 @@ def plot_all_resids(ds, ax):
                 )
                 ax.plot(range(24),
                         ds_plot.TMP_SFC.data,
-                        c='b', alpha=0.5, linewidth=0.5, zorder=2)
+                        c='#377eb8', alpha=0.5, linewidth=0.5, zorder=2)
                 ax.plot(range(24),
                         ds_plot.temp_model.data,
-                        c='r', alpha=0.2, linewidth=0.5, zorder=3)
+                        c='#ff7f00', alpha=0.2, linewidth=0.5, zorder=3)
     return
 
 

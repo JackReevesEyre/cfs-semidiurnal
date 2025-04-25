@@ -20,7 +20,7 @@ import cartopy.feature as cfeature
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import sys
-from config_semidiurnal import PLOT_DIR, DATA_DIR
+from config_semidiurnal import PLOT_DIR, DATA_DIR, OBS_DIR
 
 def main(plot_month: int = 1) -> None:
     """Creates figure.
@@ -30,46 +30,54 @@ def main(plot_month: int = 1) -> None:
     """
     
     ds_map = load_map_data(plot_month)
-    ds_timeseries = load_diurnal_comp_seasonal()
+    ds_timeseries = load_diurnal_comp_monthly()
     
     fig, axm, axts = setup_fig_axs()
+    fig.suptitle(month_names(plot_month), y=0.96, x=0.15)
     
     plot_map(fig, axm, ds_map.RANGE, ds_timeseries, plot_month)
     
     # Define timeseries locations.
-    ts_locs = np.array([[5.0, 165.0],
-                        [8.0, 205.0],
-                        [0.0, 265.0],
-                        [0.0, 165.0],
-                        [-8.0, 205.0],
-                        [-2.0, 250.0]])
+    ts_locs = np.array([[-8.0, 235.0],
+                        [-5.0, 250.0],
+                        [-5.0, 265.0],
+                        [0.0, 137.0],
+                        [-8.0, 265.0],
+                        [-8.0, 250.0]])
     
     # Plot timeseries.
     for ii in range(len(axts)):
-        plot_ts(fig, axts[ii], axm, ds_timeseries, ts_locs[ii,:])
-    axts[0].legend()
+        plot_ts(fig, axts[ii], axm, ds_timeseries, ts_locs[ii,:], plot_month)
+    leg = axts[2].legend(loc='upper right', ncol=4,
+                         bbox_to_anchor=(0.97, 1.4))
         
     # Save figure.
-    plotfileformat='pdf'
-    plt.savefig(PLOT_DIR + 'map_with_timeseries' + '.' + plotfileformat,
+    plotfileformat='png'
+    plt.savefig(PLOT_DIR + 'map_with_timeseries_investigation_' +
+                str(plot_month) +
+                '.' + plotfileformat,
                 format=plotfileformat,
                 dpi=400)
     
     return
 
 
-def plot_ts(fig, ax, axmap, ds, location):
+def plot_ts(fig, ax, axmap, ds, location, plot_month):
     """ Add time series to axes on pre-made figure.
     """
-    ds_loc = ds.sel(lat=location[0], lon=location[1])
+    ds_loc = ds.sel(lat=location[0], lon=location[1],
+                    month=int(plot_month))
     
     # Adjust to local time.
     ds_loc = order_hour_by_local_time(ds_loc, 'lon')
     ds_loc_anom = ds_loc - ds_loc.mean(dim='hour')
     
     # Plot lines.
-    ax.plot(range(24), ds_loc_anom.TMP_2m.transpose().data,
-            label=ds_loc_anom.season.data)
+    '#1f77b4', '#ff7f0e',
+    ax.plot(range(24), ds_loc_anom.TMP_2m.data,
+            label=r'$\Delta MAT$', color='#1f77b4')
+    ax.plot(range(24), ds_loc_anom.TMP_SFC.data,
+            label=r'$\Delta SST$', color='#ff7f0e')
     
     # Draw line from location to timeseries.
     # (https://stackoverflow.com/questions/62725479/how-do-i-transform-matplotlib-connectionpatch-i-e-for-cartopy-projection)
@@ -131,7 +139,7 @@ def setup_fig_axs():
     # Axes: left column.
     for ax in [axt1, axt4]:
         ax.tick_params(labelleft=True, labelright=False)
-        ax.set_ylabel(r'$\Delta MAT$' + ' (K)')
+        ax.set_ylabel(r'$\Delta T$' + ' (K)')
     # Axes: label for bottom center.
     for ax in [axt5]:
         ax.set_xlabel('local time (hours)')
@@ -233,11 +241,26 @@ def month_names(plot_month: int | float) -> str:
         plot_month: the month to get; one of [1, 2, ..., 12]
 
     Returns:
-        The 2-letter abbreviation of the month name.
+        The 3-letter abbreviation of the month name.
     """
     month_names = ['JAN','FEB','MAR','APR','MAY','JUN',
                    'JUL','AUG','SEP','OCT','NOV','DEC']
     return month_names[int(plot_month) - 1]
+
+
+def load_diurnal_comp_monthly():
+    ds = xr.open_mfdataset(DATA_DIR +
+                           "atmo_*_points_all_vars_meanDiurnalCycle.nc")
+    
+    # Calculate seasonal averages.
+    month_length = ds.time.dt.days_in_month
+    weights = (
+        month_length.groupby("time.month") /
+        month_length.groupby("time.month").sum()
+    )
+    ds_weighted = (ds * weights).groupby("time.month").sum(dim="time")
+    
+    return ds_weighted
 
 
 def load_diurnal_comp_seasonal():
@@ -253,6 +276,23 @@ def load_diurnal_comp_seasonal():
     ds_weighted = (ds * weights).groupby("time.season").sum(dim="time")
     
     return ds_weighted
+
+
+def load_tao(loc_str):
+    filename = f'SST-Tair_Jandc_{loc_str}.cdf'
+    ds = xr.open_dataset(OBS_DIR + filename, decode_times=False)
+    ds = ds.rename({f'TAIR{loc_str.upper()}_DC':'TAIR',
+                    f'SST{loc_str.upper()}_DC':'SST',
+                    'T24HR':'hour'})
+    if 'LON1' in ds.coords:
+        ds = ds.rename({'LON1':'LON'})
+    if 'LON2' in ds.coords:
+        ds = ds.rename({'LON2':'LON'})
+    if 'LON3' in ds.coords:
+        ds = ds.rename({'LON3':'LON'})
+    if 'LON4' in ds.coords:
+        ds = ds.rename({'LON4':'LON'})
+    return ds.squeeze()
 
 
 def switch_lon_lims(lon_list, min_lon=0.0):
