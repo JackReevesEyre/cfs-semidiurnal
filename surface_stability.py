@@ -65,38 +65,35 @@ def main():
                      axs[0,0],
                      r'$\Delta p$' + ' (hPa)')
     #axs[0,0].set_yticks(np.arange(-3, 3.1, 0.5), minor=True)
-    plot_many_months(ds_atmo.TMP_SFC - ds_atmo.TMP_2m,
+    plot_many_months(ds_anom.temp_adiabatic,
                      axs[0,1],
-                     r'$SST - MAT$' + ' (K)')
+                     r'$\Delta MAT_{adiabatic}$' + ' (K)')
     #axs[0,1].set_yticks(np.arange(-3, 3.1, 0.5), minor=True)
-    plot_many_months(ds_anom.LHTFL,
+    plot_many_months(ds_anom.TMP_SFC,
                      axs[1,0],
-                     r'$\Delta Q_{E}\ (W~m^{-2})$')
+                     r'$\Delta SST$' + ' (K)')
     #axs[1,0].set_yticks(np.arange(-20, 51, 5), minor=True)
-    plot_many_months(ds_anom.SHTFL,
+    plot_many_months(ds_anom.TMP_2m,
                      axs[1,1],
-                     r'$\Delta Q_{S}\ (W~m^{-2})$')
+                     r'$\Delta MAT$' + ' (K)')
+    ylims_sst = axs[1,0].get_ylim()
+    ylims_mat = axs[1,1].get_ylim()
+    for ax in [axs[1,0], axs[1,1]]:
+        ax.set_ylim(min(ylims_sst[0], ylims_mat[0]),
+                    max(ylims_sst[1], ylims_mat[1]))
     #axs[1,1].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
-    plot_many_months(ds_anom.SPFH_2m * 1000.0,
+    plot_many_months(ds_anom.SHTFL,
                      axs[2,0],
-                     r'$\Delta q_{2m}\ (g~kg^{-1})$')
+                     r'$\Delta Q_{S}\ (W~m^{-2})$')
     #axs[2,0].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
-    plot_many_months((ds_anom.SPFHS - ds_anom.SPFH_2m) * 1000.0,
+    plot_many_months(ds_anom.LHTFL,
                      axs[2,1],
-                     r'$\Delta (q_{s} - q_{2m})\ (g~kg^{-1})$')
+                     r'$\Delta Q_{E}\ (W~m^{-2})$')
     #axs[2,0].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
-    plot_many_months(ds_anom.WSPD_10m,
-                     axs[3,0],
-                     r'$\Delta |U_{10m}|\ (m~s^{-1})$')
-    #axs[3,0].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
-    plot_many_months(ds_anom.UGRD_10m,
-                     axs[3,1],
-                     r'$\Delta u_{10m}\ (m~s^{-1})$')
-    #axs[3,1].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
     
     # Save figure.
     plotfileformat='png'
-    plt.savefig(PLOT_DIR + 'surface_stability' + '.' + plotfileformat,
+    plt.savefig(PLOT_DIR + 'surface_stability_main' + '.' + plotfileformat,
                 format=plotfileformat,
                 dpi=400,
                 bbox_inches='tight')
@@ -112,7 +109,7 @@ def setup_fig_axs():
     """
     
     # Set up axes layout.
-    fig, axs = plt.subplots(nrows=4, ncols=2,
+    fig, axs = plt.subplots(nrows=3, ncols=2,
                             sharex=True, squeeze=False,
                             figsize=(10,14))
     
@@ -144,7 +141,7 @@ def setup_fig_axs():
     
     # Add labels to all axes.
     for (ax,letter) in zip(axs.flatten(),
-                           ['a','b','c','d', 'e', 'f', 'g', 'h']):
+                           ['a','b','c','d', 'e', 'f']):
         ax.text(0.01, 0.9, letter,
                 horizontalalignment='left',
                 transform=ax.transAxes)

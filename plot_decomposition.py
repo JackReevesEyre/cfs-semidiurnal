@@ -4,6 +4,7 @@
 import sys
 import os
 import re
+import scipy.stats
 import xarray as xr
 import numpy as np
 import matplotlib
@@ -98,10 +99,26 @@ def main():
         - ds_phase_diff_min['TMP_SFC']
     plot_time_map(tmin_error_diff, fig, axmap[2],
                   r'$t_{min}$' + ' error diff. (hours)')
+    ttest_max = scipy.stats.ttest_ind(
+        ds_phase_diff_max['temp_model'],
+        ds_phase_diff_max['TMP_SFC'],
+        axis=None,
+        equal_var=False,
+        nan_policy='omit'
+    )
+    ttest_min = scipy.stats.ttest_ind(
+        ds_phase_diff_min['temp_model'],
+        ds_phase_diff_min['TMP_SFC'],
+        axis=None,
+        equal_var=False,
+        nan_policy='omit'
+    )
     print('----- t_max error diff (< 0 means adiabatic model better than SST) -----')
     print(f'Max: {tmax_error_diff.max().data},  min: {tmax_error_diff.min().data},  mean; {tmax_error_diff.mean().data}')
+    print(f'T-test p-value: {ttest_max.pvalue}')
     print('----- t_min error diff (< 0 means adiabatic model better than SST) -----')
     print(f'Max: {tmin_error_diff.max().data},  min: {tmin_error_diff.min().data},  mean; {tmin_error_diff.mean().data}')
+    print(f'T-test p-value: {ttest_min.pvalue}')
     
     # Save figure.
     plotfileformat='pdf'
