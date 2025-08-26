@@ -61,38 +61,12 @@ def main():
     fig, axs = setup_fig_axs()
     
     # Plots.
-    plot_many_months(ds_anom.PRES/100.0,
-                     axs[0,0],
-                     r'$\Delta p$' + ' (hPa)')
-    #axs[0,0].set_yticks(np.arange(-3, 3.1, 0.5), minor=True)
-    plot_many_months(ds_atmo.TMP_SFC - ds_atmo.TMP_2m,
-                     axs[0,1],
-                     r'$SST - MAT$' + ' (K)')
-    #axs[0,1].set_yticks(np.arange(-3, 3.1, 0.5), minor=True)
-    plot_many_months(ds_anom.LHTFL,
-                     axs[1,0],
-                     r'$\Delta Q_{E}\ (W~m^{-2})$')
-    #axs[1,0].set_yticks(np.arange(-20, 51, 5), minor=True)
-    plot_many_months(ds_anom.SHTFL,
-                     axs[1,1],
-                     r'$\Delta Q_{S}\ (W~m^{-2})$')
-    #axs[1,1].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
-    plot_many_months(ds_anom.SPFH_2m * 1000.0,
-                     axs[2,0],
-                     r'$\Delta q_{2m}\ (g~kg^{-1})$')
-    #axs[2,0].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
-    plot_many_months((ds_anom.SPFHS - ds_anom.SPFH_2m) * 1000.0,
-                     axs[2,1],
-                     r'$\Delta (q_{s} - q_{2m})\ (g~kg^{-1})$')
-    #axs[2,0].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
-    plot_many_months(ds_anom.WSPD_10m,
-                     axs[3,0],
-                     r'$\Delta |U_{10m}|\ (m~s^{-1})$')
-    #axs[3,0].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
     plot_many_months(ds_anom.UGRD_10m,
-                     axs[3,1],
+                     axs[0,0],
                      r'$\Delta u_{10m}\ (m~s^{-1})$')
-    #axs[3,1].set_yticks(np.arange(-5, 5.1, 1.0), minor=True)
+    plot_many_months(ds_anom.VGRD_10m,
+                     axs[0,1],
+                     r'$\Delta v_{10m}\ (m~s^{-1})$')
     
     # Save figure.
     plotfileformat='png'
@@ -112,9 +86,10 @@ def setup_fig_axs():
     """
     
     # Set up axes layout.
-    fig, axs = plt.subplots(nrows=4, ncols=2,
-                            sharex=True, squeeze=False,
-                            figsize=(10,14))
+    fig, axs = plt.subplots(nrows=1, ncols=2,
+                            sharex=True, sharey=True,
+                            squeeze=False,
+                            figsize=(10,5))
     
     # Axes details: all panels.
     for ax in axs.flatten():
@@ -144,7 +119,7 @@ def setup_fig_axs():
     
     # Add labels to all axes.
     for (ax,letter) in zip(axs.flatten(),
-                           ['a','b','c','d', 'e', 'f', 'g', 'h']):
+                           ['a','b','c','d', 'e', 'f', 'g', 'h', 'i', 'j']):
         ax.text(0.01, 0.9, letter,
                 horizontalalignment='left',
                 transform=ax.transAxes)
