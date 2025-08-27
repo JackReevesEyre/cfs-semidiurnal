@@ -48,7 +48,7 @@ def main():
     )] = np.nan
     
     # Calculate surface humidity.
-    ds_atmo['SPFHS'] = 0.98 * qsat(ds_atmo['TMP_2m'], ds_atmo['PRES'])
+    ds_atmo['SPFHS'] = 0.98 * qsat(ds_atmo['TMP_SFC'], ds_atmo['PRES'])
     
     # Calculate wind speed.
     ds_atmo['WSPD_10m'] = np.sqrt(ds_atmo['VGRD_10m']**2 +
