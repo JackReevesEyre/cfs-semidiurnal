@@ -69,7 +69,7 @@ def main():
                      r'$\Delta v_{10m}\ (m~s^{-1})$')
     
     # Save figure.
-    plotfileformat='png'
+    plotfileformat='pdf'
     plt.savefig(PLOT_DIR + 'surface_stability_supp' + '.' + plotfileformat,
                 format=plotfileformat,
                 dpi=400,

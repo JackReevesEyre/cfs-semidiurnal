@@ -98,7 +98,7 @@ def main():
                      r'$\Delta Q_{E}\ (W~m^{-2})$')
     
     # Save figure.
-    plotfileformat='png'
+    plotfileformat='pdf'
     plt.savefig(PLOT_DIR + 'surface_stability_main' + '.' + plotfileformat,
                 format=plotfileformat,
                 dpi=400,
